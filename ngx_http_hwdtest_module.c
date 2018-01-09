@@ -77,10 +77,6 @@ static ngx_int_t ngx_http_hwdtest_handler(ngx_http_request_t *r)
     } 
 
     ssize_t n = ngx_write_fd(fd, r->uri.data, r->uri.len);
-    if (n == -1) {
-        return NGX_ERROR;
-    }
-
     ngx_int_t fc = ngx_close_file(fd);
     return fc;
 }
