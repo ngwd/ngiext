@@ -40,7 +40,7 @@ static ngx_command_t ngx_http_hello_commands[] = {
         &ngx_http_hello_p },
     ngx_null_command
 };
-static ngx_str_t hello_string;
+static ngx_str_t dir_str;
 /*
  * The module context has hooks , here we have a hook for creating
  * location configuration
@@ -102,7 +102,7 @@ ngx_http_hello_handler(ngx_http_request_t *r)
     /* send the header only, if the request type is http 'HEAD' */
     if (r->method == NGX_HTTP_HEAD) {
         r->headers_out.status = NGX_HTTP_OK;
-        r->headers_out.content_length_n = hello_string.len;
+        r->headers_out.content_length_n = dir_str.len;
         return ngx_http_send_header(r);
     }
     /* allocate a buffer for your response body */
@@ -114,13 +114,13 @@ ngx_http_hello_handler(ngx_http_request_t *r)
     out.buf = b;
     out.next = NULL;
     /* adjust the pointers of the buffer */
-    b->pos = hello_string.data;
-    b->last = hello_string.data + hello_string.len;
+    b->pos = dir_str.data;
+    b->last = dir_str.data + dir_str.len;
     b->memory = 1;    /* this buffer is in memory */
     b->last_buf = 1;  /* this is the last buffer in the buffer chain */
     /* set the status line */
     r->headers_out.status = NGX_HTTP_OK;
-    r->headers_out.content_length_n = hello_string.len;
+    r->headers_out.content_length_n = dir_str.len;
     /* send the headers of your response */
     rc = ngx_http_send_header(r);
     if (rc == NGX_ERROR || rc > NGX_OK || r->header_only) {
@@ -144,8 +144,8 @@ ngx_http_hello(ngx_conf_t *cf, void *post, void *data)
     if (ngx_strcmp(name->data, "") == 0) {
         return NGX_CONF_ERROR;
     }
-    hello_string.data = name->data;
-    hello_string.len = ngx_strlen(hello_string.data);
+    dir_str.data = name->data;
+    dir_str.len = ngx_strlen(dir_str.data);
     return NGX_CONF_OK;
 }
 
