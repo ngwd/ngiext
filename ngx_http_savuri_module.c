@@ -4,6 +4,16 @@
 
 static char *ngx_http_savuri(ngx_conf_t *, void *, void *);
 static ngx_conf_post_handler_pt ngx_http_savuri_p = ngx_http_savuri;
+static ngx_str_t file_str;
+static ngx_fd_t  fd = NGX_INVALID_FILE;
+
+void close_file_when_exit_master(ngx_cycle_t *c) {
+    if (fd != NGX_INVALID_FILE) {
+        ngx_close_file(fd);
+        fd = NGX_INVALID_FILE;
+    }
+}
+
 /*
  * The structure will hold the value of the
  * module directive savuri
@@ -41,7 +51,6 @@ static ngx_command_t ngx_http_savuri_commands[] = {
     },
     ngx_null_command
 };
-static ngx_str_t file_str;
 
 /*
  * The module context has hooks , here we have a hook for creating
@@ -72,7 +81,7 @@ ngx_module_t ngx_http_savuri_module = {
     NULL,                          /* init thread */ 
     NULL,                          /* exit thread */ 
     NULL,                          /* exit process */ 
-    NULL,                          /* exit master */ 
+    close_file_when_exit_master,   /* exit master */ 
     NGX_MODULE_V1_PADDING
 };
 /*
@@ -87,22 +96,20 @@ static ngx_int_t ngx_http_savuri_handler(ngx_http_request_t *r)
     if (!(r->method & NGX_HTTP_GET)) {
         return NGX_HTTP_NOT_ALLOWED;
     }
-    ngx_fd_t fd = NGX_INVALID_FILE;
-    //if (fd == NGX_INVALID_FILE)
-    fd = ngx_open_file(file_str.data, 
+    if (fd == NGX_INVALID_FILE) {
+       fd = ngx_open_file(file_str.data, 
                        NGX_FILE_APPEND,
                        NGX_FILE_CREATE_OR_OPEN,
                        NGX_FILE_DEFAULT_ACCESS);
 
-    if (NGX_INVALID_FILE==fd) 
-        return NGX_FILE_ERROR;
+       if (NGX_INVALID_FILE==fd) 
+          return NGX_FILE_ERROR;
+    }
 
-    /* fd is open when read the conf */
-    ngx_write_fd(fd, r->uri.data, r->uri.len);  
-    ngx_write_fd(fd, (u_char*)"\r\n", 2);
-
-    /* */
-    ngx_close_file(fd);
+    if (fd != NGX_INVALID_FILE) { /* fd must be open */
+        ngx_write_fd(fd, r->uri.data, r->uri.len);  
+        ngx_write_fd(fd, (u_char*)"\r\n", 2);
+    }
 
     /* set the 'Content-type' header */
     ngx_str_set(&r->headers_out.content_type, "text/html");
@@ -120,11 +127,6 @@ static ngx_int_t ngx_http_savuri_handler(ngx_http_request_t *r)
     /* adjust the pointers of the buffer */
     b->pos = file_str.data;
     b->last = file_str.data + file_str.len;
-    /*
-    u_char * rsp = (u_char*)"OK";
-    b->pos = rsp;
-    b->last = rsp+2;
-    */
     b->memory = 1;    /* this buffer is in memory */
     b->last_buf = 1;  /* this is the last buffer in the buffer chain */
 
