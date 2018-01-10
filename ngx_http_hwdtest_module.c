@@ -1,25 +1,25 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
-static char *ngx_http_hello(ngx_conf_t *, void *, void *);
-static ngx_conf_post_handler_pt ngx_http_hello_p = ngx_http_hello;
+static char *ngx_http_hwdtest(ngx_conf_t *, void *, void *);
+static ngx_conf_post_handler_pt ngx_http_hwdtest_p = ngx_http_hwdtest;
 /*
  * The structure will hold the value of the
- * module directive hello
+ * module directive hwdtest
  */
 
 typedef struct {
     ngx_str_t   name;
-} ngx_http_hello_loc_conf_t;
+} ngx_http_hwdtest_loc_conf_t;
 
 /* 
  * The function which initializes memory for the module configuration structure       
  */
 static void *
-ngx_http_hello_create_loc_conf(ngx_conf_t *cf)
+ngx_http_hwdtest_create_loc_conf(ngx_conf_t *cf)
 {
-    ngx_http_hello_loc_conf_t  *conf;
-    conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_hello_loc_conf_t));
+    ngx_http_hwdtest_loc_conf_t  *conf;
+    conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_hwdtest_loc_conf_t));
     if (conf == NULL) {
         return NULL;
     }
@@ -31,13 +31,13 @@ ngx_http_hello_create_loc_conf(ngx_conf_t *cf)
  * directive along with a function which validates the value of the
  * directive and also initializes the main handler of this module
  */
-static ngx_command_t ngx_http_hello_commands[] = {
-    { ngx_string("hello"), 
+static ngx_command_t ngx_http_hwdtest_commands[] = {
+    { ngx_string("hwdtest"), 
         NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1, 
         ngx_conf_set_str_slot, 
         NGX_HTTP_LOC_CONF_OFFSET, 
-        offsetof(ngx_http_hello_loc_conf_t, name), 
-        &ngx_http_hello_p },
+        offsetof(ngx_http_hwdtest_loc_conf_t, name), 
+        &ngx_http_hwdtest_p },
     ngx_null_command
 };
 static ngx_str_t dir_str;
@@ -45,24 +45,24 @@ static ngx_str_t dir_str;
  * The module context has hooks , here we have a hook for creating
  * location configuration
  */
-static ngx_http_module_t ngx_http_hello_module_ctx = {
+static ngx_http_module_t ngx_http_hwdtest_module_ctx = {
     NULL,                          /* preconfiguration */
     NULL,                          /* postconfiguration */
     NULL,                          /* create main configuration */
     NULL,                          /* init main configuration */
     NULL,                          /* create server configuration */
     NULL,                          /* merge server configuration */
-    ngx_http_hello_create_loc_conf, /* create location configuration */
+    ngx_http_hwdtest_create_loc_conf, /* create location configuration */
     NULL                           /* merge location configuration */
 };
 /*
  * The module which binds the context and commands
  *
  */
-ngx_module_t ngx_http_hello_module = { 
+ngx_module_t ngx_http_hwdtest_module = { 
     NGX_MODULE_V1,
-    &ngx_http_hello_module_ctx,    /* module context */ 
-    ngx_http_hello_commands,       /* module directives */ 
+    &ngx_http_hwdtest_module_ctx,    /* module context */ 
+    ngx_http_hwdtest_commands,       /* module directives */ 
     NGX_HTTP_MODULE,               /* module type */ 
     NULL,                          /* init master */ 
     NULL,                          /* init module */ 
@@ -77,7 +77,7 @@ ngx_module_t ngx_http_hello_module = {
  * Main handler function of the module.
  */
 static ngx_int_t
-ngx_http_hello_handler(ngx_http_request_t *r)
+ngx_http_hwdtest_handler(ngx_http_request_t *r)
 {
     ngx_int_t    rc;
     ngx_buf_t   *b;
@@ -131,16 +131,16 @@ ngx_http_hello_handler(ngx_http_request_t *r)
 }
 
 /*
- * Function for the directive hello , it validates its value
+ * Function for the directive hwdtest , it validates its value
  * and copies it to a static variable to be printed later
  */
     static char *
-ngx_http_hello(ngx_conf_t *cf, void *post, void *data)
+ngx_http_hwdtest(ngx_conf_t *cf, void *post, void *data)
 {
     ngx_http_core_loc_conf_t *clcf;
     clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
-    clcf->handler = ngx_http_hello_handler;
-    ngx_str_t  *name = data; // i.e., first field of ngx_http_hello_loc_conf_t
+    clcf->handler = ngx_http_hwdtest_handler;
+    ngx_str_t  *name = data; // i.e., first field of ngx_http_hwdtest_loc_conf_t
     if (ngx_strcmp(name->data, "") == 0) {
         return NGX_CONF_ERROR;
     }
